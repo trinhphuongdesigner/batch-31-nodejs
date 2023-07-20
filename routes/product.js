@@ -87,6 +87,14 @@ router.put('/:id', async function (req, res, next) {
   const { id } = req.params;
   const { name, price, description, discount } = req.body; // case 1
 
+  // const product = products.find((item) => item.id.toString() === id.toString());
+
+  // if (product.isDeleted) {
+  //   return res.send(400, {
+  //     message: "Sản phẩm đã bị xóa",
+  //   });
+  // }
+
   const updateData = {
     id,
     name,
@@ -95,19 +103,31 @@ router.put('/:id', async function (req, res, next) {
     discount,
   };
 
+  let isErr = false;
+
   const newProductList = products.map((item) => {
     if (item.id.toString() === id.toString()) {
-      return updateData;
-    };
+      if (item.isDeleted) {
+        isErr = true;
+        return item;
+      } else {
+        return updateData;
+      }
+    }
 
     return item;
   })
 
-  await writeFileSync('./data/products.json', newProductList);
+  if (!isErr) {
+    await writeFileSync('./data/products.json', newProductList);
 
-  return res.send(200, {
-    message: "Thành công",
-    payload: updateData,
+    return res.send(200, {
+      message: "Thành công",
+      payload: updateData,
+    });
+  }
+  return res.send(400, {
+    message: "Cập nhật không thành công",
   });
 });
 
@@ -119,24 +139,33 @@ router.patch('/:id', async function (req, res, next) {
   console.log('««««« req.body »»»»»', req.body);
 
   let updateData = {};
+  let isErr = false;
 
   const newProductList = products.map((item) => {
     if (item.id.toString() === id.toString()) {
-      updateData = combineObjects(item, { name, price, description, discount });
+      if (item.isDeleted) {
+        isErr = true;
+        return item;
+      } else {
+        updateData = combineObjects(item, { name, price, description, discount });
 
-      return updateData;
-    };
+        return updateData;
+      }
+    }
 
     return item;
   })
 
-  console.log('««««« updateData »»»»»', updateData);
+  if (!isErr) {
+    await writeFileSync('./data/products.json', newProductList);
 
-  await writeFileSync('./data/products.json', newProductList);
-
-  return res.send(200, {
-    message: "Thành công",
-    payload: updateData,
+    return res.send(200, {
+      message: "Thành công",
+      payload: updateData,
+    });
+  }
+  return res.send(400, {
+    message: "Cập nhật không thành công",
   });
 });
 
@@ -148,7 +177,7 @@ router.patch('/delete/:id', async function (req, res, next) {
     if (item.id.toString() === id.toString()) {
       return {
         ...item,
-        isDeleted : true,
+        isDeleted: true,
       };
     };
 
