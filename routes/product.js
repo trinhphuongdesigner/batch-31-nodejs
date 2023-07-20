@@ -30,7 +30,15 @@ const combineObjects = (obj1, obj2) => {
   }
 
   return combinedObj;
-}
+};
+
+const fuzzySearch = (text) => {
+  const regex = text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+
+  return new RegExp(regex, 'gi');
+};
+
+module.exports = fuzzySearch;
 
 
 const generationID = () => Math.floor(Date.now());
@@ -40,6 +48,29 @@ router.get('/', function (req, res, next) {
   res.send(200, {
     message: "Thành công",
     payload: products.filter((item) => !item.isDeleted),
+  });
+});
+
+/* SEARCH LIST. */
+router.get('/search', function (req, res, next) {
+  const { name } = req.query;
+  let productFilter = [];
+
+  if (name) {
+    const searchRex = fuzzySearch(name);
+
+    productFilter = products.filter((item) => {
+      if (!item.isDeleted && searchRex.test(item.name)) {
+        return item;
+      }
+    })
+  } else {
+    productFilter = products.filter((item) => !item.isDeleted);
+  }
+
+  res.send(200, {
+    message: "Thành công",
+    payload: productFilter,
   });
 });
 
@@ -136,8 +167,6 @@ router.patch('/:id', async function (req, res, next) {
   const { id } = req.params;
   const { name, price, description, discount } = req.body; // case 1
 
-  console.log('««««« req.body »»»»»', req.body);
-
   let updateData = {};
   let isErr = false;
 
@@ -183,8 +212,6 @@ router.patch('/delete/:id', async function (req, res, next) {
 
     return item;
   })
-
-  console.log('««««« newProductList »»»»»', newProductList);
 
   await writeFileSync('./data/products.json', newProductList);
 
