@@ -39,12 +39,12 @@ const fuzzySearch = (text) => {
   return new RegExp(regex, 'gi');
 };
 
-module.exports = fuzzySearch;
+// module.exports = fuzzySearch;
 
 
 const generationID = () => Math.floor(Date.now());
 
-const validateSchema = (schema) => async (req, res, next) => {
+const validateSchema = (schema) => async (req, res, next) => { // thực thi việc xác thực
   try {
     await schema.validate({
       body: req.body,
@@ -77,7 +77,6 @@ const validationProductInfoSchema = yup.object().shape({
   }),
 });
 
-
 /* GET LIST. */
 router.get('/', function (req, res, next) {
   res.send(200, {
@@ -109,8 +108,7 @@ router.get('/search', function (req, res, next) {
   });
 });
 
-/* GET DETAIL. */
-router.get('/:id', validateSchema(checkIdSchema), function (req, res, next) {
+function getDetail (req, res, next) {
   const { id } = req.params;
   const product = products.find((item) => item.id.toString() === id.toString());
 
@@ -130,7 +128,10 @@ router.get('/:id', validateSchema(checkIdSchema), function (req, res, next) {
   return res.send(404, {
     message: "Không tìm thấy",
   })
-});
+}
+
+/* GET DETAIL. */
+router.get('/:id', validateSchema(checkIdSchema), getDetail);
 // router.get('/:id', function (req, res, next) {
 //   const validationGetProductDetailSchema = yup.object().shape({
 //     params: yup.object({

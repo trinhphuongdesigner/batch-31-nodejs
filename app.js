@@ -8,7 +8,7 @@ require('dotenv').config();
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const welcomeRouter = require('./routes/welcome');
-const productRouter = require('./routes/product');
+const productRouter = require('./routes/products/router');
 
 const app = express();
 
