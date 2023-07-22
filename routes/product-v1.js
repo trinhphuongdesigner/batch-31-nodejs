@@ -77,74 +77,26 @@ router.get('/search', function (req, res, next) {
 
 /* GET DETAIL. */
 router.get('/:id', function (req, res, next) {
-  const validationGetProductDetailSchema = yup.object().shape({
-    params: yup.object({
-      id: yup.number(),
-    }),
-  });
+  const { id } = req.params;
+  const product = products.find((item) => item.id.toString() === id.toString());
 
-  validationGetProductDetailSchema
-    .validate({ params: req.params }, { abortEarly: false })
-    .then(() => {
-      const { id } = req.params;
-      const product = products.find((item) => item.id.toString() === id.toString());
-
-      if (product) {
-        if (product.isDeleted) {
-          return res.send(400, {
-            message: "Sản phẩm đã bị xóa",
-          });
-        }
-
-        return res.send(200, {
-          message: "Thành công",
-          payload: product,
-        });
-      }
-
-      return res.send(404, {
-        message: "Không tìm thấy",
-      })
-    })
-    .catch((err) => {
-      console.log('««««« err »»»»»', err);
-      return res.status(400).json({ type: "Xác thực thất bại", errors: err.errors, provider: 'yup' });
+  if (product.isDeleted) {
+    return res.send(400, {
+      message: "Sản phẩm đã bị xóa",
     });
+  }
+
+  if (product) {
+    return res.send(200, {
+      message: "Thành công",
+      payload: product,
+    });
+  }
+
+  return res.send(404, {
+    message: "Không tìm thấy",
+  })
 });
-
-// router.get('/:id', function (req, res, next) {
-//   const validationGetProductDetailSchema = yup.object().shape({
-//     id: yup.number(),
-//   });
-
-//   validationGetProductDetailSchema
-//     .validate({ id: req.params.id }, { abortEarly: false })
-//     .then(() => {
-//       const { id } = req.params;
-//       const product = products.find((item) => item.id.toString() === id.toString());
-
-//       if (product) {
-//         if (product.isDeleted) {
-//           return res.send(400, {
-//             message: "Sản phẩm đã bị xóa",
-//           });
-//         }
-
-//         return res.send(200, {
-//           message: "Thành công",
-//           payload: product,
-//         });
-//       }
-
-//       return res.send(404, {
-//         message: "Không tìm thấy",
-//       })
-//     })
-//     .catch((err) => {
-//       console.log('««««« err »»»»»', err);
-//       return res.status(400).json({ type: "Xác thực thất bại", errors: err.errors, provider: 'yup' });
-//     });
-// });
 
 /* CREATE. */
 router.post('/', function (req, res, next) {
