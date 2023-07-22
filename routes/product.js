@@ -44,6 +44,40 @@ module.exports = fuzzySearch;
 
 const generationID = () => Math.floor(Date.now());
 
+const validateSchema = (schema) => async (req, res, next) => {
+  try {
+    await schema.validate({
+      body: req.body,
+      query: req.query,
+      params: req.params,
+    },
+    {
+      abortEarly: false,
+    });
+    return next();
+  } catch (err) {
+    return res.status(400).json({ type: err.name, errors: err.errors, provider: "YUP" });
+  }
+};
+
+const checkIdSchema = yup.object({ // BỘ LỌC RIÊNG CHO TỪNG TRƯỜNG HỢP
+  params: yup.object({
+    id: yup.number(),
+  }),
+});
+
+const validationProductInfoSchema = yup.object().shape({
+  body: yup.object({
+    name: yup.string().max(50, "Tên sản phẩm quá dài").required("Tên không được bỏ trống"),
+    price: yup.number().min(0, "Giá không thể âm").integer().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+    discount: yup.number().min(0, "Giảm giá không thể âm").max(75, "Giảm giá quá lớn").integer().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+    stock: yup.number().min(0, "Số lượng không hợp lệ").integer().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+    description: yup.string().max(3000, "Mô tả quá dài").required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+    isDeleted: yup.boolean().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+  }),
+});
+
+
 /* GET LIST. */
 router.get('/', function (req, res, next) {
   res.send(200, {
@@ -76,40 +110,61 @@ router.get('/search', function (req, res, next) {
 });
 
 /* GET DETAIL. */
-router.get('/:id', function (req, res, next) {
-  const validationGetProductDetailSchema = yup.object().shape({
-    params: yup.object({
-      id: yup.number(),
-    }),
-  });
+router.get('/:id', validateSchema(checkIdSchema), function (req, res, next) {
+  const { id } = req.params;
+  const product = products.find((item) => item.id.toString() === id.toString());
 
-  validationGetProductDetailSchema
-    .validate({ params: req.params }, { abortEarly: false })
-    .then(() => {
-      const { id } = req.params;
-      const product = products.find((item) => item.id.toString() === id.toString());
+  if (product) {
+    if (product.isDeleted) {
+      return res.send(400, {
+        message: "Sản phẩm đã bị xóa",
+      });
+    }
 
-      if (product) {
-        if (product.isDeleted) {
-          return res.send(400, {
-            message: "Sản phẩm đã bị xóa",
-          });
-        }
-
-        return res.send(200, {
-          message: "Thành công",
-          payload: product,
-        });
-      }
-
-      return res.send(404, {
-        message: "Không tìm thấy",
-      })
-    })
-    .catch((err) => {
-      return res.status(400).json({ type: "Xác thực thất bại", errors: err.errors, provider: 'yup' });
+    return res.send(200, {
+      message: "Thành công",
+      payload: product,
     });
+  }
+
+  return res.send(404, {
+    message: "Không tìm thấy",
+  })
 });
+// router.get('/:id', function (req, res, next) {
+//   const validationGetProductDetailSchema = yup.object().shape({
+//     params: yup.object({
+//       id: yup.number(),
+//     }),
+//   });
+
+//   validationGetProductDetailSchema
+//     .validate({ params: req.params }, { abortEarly: false })
+//     .then(() => {
+//       const { id } = req.params;
+//       const product = products.find((item) => item.id.toString() === id.toString());
+
+//       if (product) {
+//         if (product.isDeleted) {
+//           return res.send(400, {
+//             message: "Sản phẩm đã bị xóa",
+//           });
+//         }
+
+//         return res.send(200, {
+//           message: "Thành công",
+//           payload: product,
+//         });
+//       }
+
+//       return res.send(404, {
+//         message: "Không tìm thấy",
+//       })
+//     })
+//     .catch((err) => {
+//       return res.status(400).json({ type: "Xác thực thất bại", errors: err.errors, provider: 'yup' });
+//     });
+// });
 
 // router.get('/:id', function (req, res, next) {
 //   const validationGetProductDetailSchema = yup.object().shape({
@@ -146,36 +201,18 @@ router.get('/:id', function (req, res, next) {
 // });
 
 /* CREATE. */
-router.post('/', function (req, res, next) {
-  const validationSchema = yup.object().shape({
-    body: yup.object({
-      name: yup.string().max(50, "Tên sản phẩm quá dài").required("Tên không được bỏ trống"),
-      price: yup.number().min(0, "Giá không thể âm").integer().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
-      discount: yup.number().min(0, "Giảm giá không thể âm").max(75, "Giảm giá quá lớn").integer().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
-      stock: yup.number().min(0, "Số lượng không hợp lệ").integer().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
-      description: yup.string().max(3000, "Mô tả quá dài").required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
-      isDeleted: yup.boolean().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
-    }),
-  });
+router.post('/', validateSchema(validationProductInfoSchema), function (req, res, next) {
+  const { name, price, discount, stock, description, isDeleted } = req.body;
+  const newProductList = [
+    ...products,
+    { id: generationID(), name, price, discount, stock, description, isDeleted }
+  ];
 
-  validationSchema
-  .validate({ body: req.body }, { abortEarly: false })
-  .then(() => {
-    const { name, price, discount, stock, description, isDeleted } = req.body;
-    const newProductList = [
-      ...products,
-      { id: generationID(), name, price, discount, stock, description, isDeleted }
-    ];
-  
-    writeFileSync('./data/products.json', newProductList);
-  
-    return res.send(200, {
-      message: "Thành công",
-      // payload: products,
-    });
-  })
-  .catch((err) => {
-    return res.status(400).json({ type: "Xác thực thất bại", errors: err.errors, provider: 'yup' });
+  writeFileSync('./data/products.json', newProductList);
+
+  return res.send(200, {
+    message: "Thành công",
+    // payload: products,
   });
 });
 
@@ -196,59 +233,59 @@ router.put('/:id', async function (req, res, next) {
   });
 
   validationSchema
-  .validate({ params: req.params, body: req.body }, { abortEarly: false })
-  .then(() => {
-    const { id } = req.params;
-    const { name, price, description, discount, stock, isDeleted } = req.body; // case 1
-  
-    // const product = products.find((item) => item.id.toString() === id.toString());
-  
-    // if (product.isDeleted) {
-    //   return res.send(400, {
-    //     message: "Sản phẩm đã bị xóa",
-    //   });
-    // }
-  
-    const updateData = {
-      id,
-      name,
-      price,
-      description,
-      discount,
-      stock,
-      isDeleted,
-    };
-  
-    let isErr = false;
-  
-    const newProductList = products.map((item) => {
-      if (item.id.toString() === id.toString()) {
-        if (item.isDeleted) {
-          isErr = true;
-          return item;
-        } else {
-          return updateData;
+    .validate({ params: req.params, body: req.body }, { abortEarly: false })
+    .then(() => {
+      const { id } = req.params;
+      const { name, price, description, discount, stock, isDeleted } = req.body; // case 1
+
+      // const product = products.find((item) => item.id.toString() === id.toString());
+
+      // if (product.isDeleted) {
+      //   return res.send(400, {
+      //     message: "Sản phẩm đã bị xóa",
+      //   });
+      // }
+
+      const updateData = {
+        id,
+        name,
+        price,
+        description,
+        discount,
+        stock,
+        isDeleted,
+      };
+
+      let isErr = false;
+
+      const newProductList = products.map((item) => {
+        if (item.id.toString() === id.toString()) {
+          if (item.isDeleted) {
+            isErr = true;
+            return item;
+          } else {
+            return updateData;
+          }
         }
+
+        return item;
+      })
+
+      if (!isErr) {
+        writeFileSync('./data/products.json', newProductList);
+
+        return res.send(200, {
+          message: "Thành công",
+          payload: updateData,
+        });
       }
-  
-      return item;
-    })
-  
-    if (!isErr) {
-      writeFileSync('./data/products.json', newProductList);
-  
-      return res.send(200, {
-        message: "Thành công",
-        payload: updateData,
+      return res.send(400, {
+        message: "Cập nhật không thành công",
       });
-    }
-    return res.send(400, {
-      message: "Cập nhật không thành công",
+    })
+    .catch((err) => {
+      return res.status(400).json({ type: "Xác thực thất bại", errors: err.errors, provider: 'yup' });
     });
-  })
-  .catch((err) => {
-    return res.status(400).json({ type: "Xác thực thất bại", errors: err.errors, provider: 'yup' });
-  });
 });
 
 /* UPDATE - PATCH. */
