@@ -181,50 +181,73 @@ router.post('/', function (req, res, next) {
 
 /* UPDATE - PUT. */
 router.put('/:id', async function (req, res, next) {
-  const { id } = req.params;
-  const { name, price, description, discount } = req.body; // case 1
+  const validationSchema = yup.object().shape({
+    body: yup.object({
+      name: yup.string().max(50, "Tên sản phẩm quá dài").required("Tên không được bỏ trống"),
+      price: yup.number().min(0, "Giá không thể âm").integer().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+      discount: yup.number().min(0, "Giảm giá không thể âm").max(75, "Giảm giá quá lớn").integer().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+      stock: yup.number().min(0, "Số lượng không hợp lệ").integer().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+      description: yup.string().max(3000, "Mô tả quá dài").required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+      isDeleted: yup.boolean().required(({ path }) => `${path.split(".")[1]} không được bỏ trống`),
+    }),
+    params: yup.object({
+      id: yup.number(),
+    })
+  });
 
-  // const product = products.find((item) => item.id.toString() === id.toString());
-
-  // if (product.isDeleted) {
-  //   return res.send(400, {
-  //     message: "Sản phẩm đã bị xóa",
-  //   });
-  // }
-
-  const updateData = {
-    id,
-    name,
-    price,
-    description,
-    discount,
-  };
-
-  let isErr = false;
-
-  const newProductList = products.map((item) => {
-    if (item.id.toString() === id.toString()) {
-      if (item.isDeleted) {
-        isErr = true;
-        return item;
-      } else {
-        return updateData;
+  validationSchema
+  .validate({ params: req.params, body: req.body }, { abortEarly: false })
+  .then(() => {
+    const { id } = req.params;
+    const { name, price, description, discount, stock, isDeleted } = req.body; // case 1
+  
+    // const product = products.find((item) => item.id.toString() === id.toString());
+  
+    // if (product.isDeleted) {
+    //   return res.send(400, {
+    //     message: "Sản phẩm đã bị xóa",
+    //   });
+    // }
+  
+    const updateData = {
+      id,
+      name,
+      price,
+      description,
+      discount,
+      stock,
+      isDeleted,
+    };
+  
+    let isErr = false;
+  
+    const newProductList = products.map((item) => {
+      if (item.id.toString() === id.toString()) {
+        if (item.isDeleted) {
+          isErr = true;
+          return item;
+        } else {
+          return updateData;
+        }
       }
+  
+      return item;
+    })
+  
+    if (!isErr) {
+      writeFileSync('./data/products.json', newProductList);
+  
+      return res.send(200, {
+        message: "Thành công",
+        payload: updateData,
+      });
     }
-
-    return item;
-  })
-
-  if (!isErr) {
-    await writeFileSync('./data/products.json', newProductList);
-
-    return res.send(200, {
-      message: "Thành công",
-      payload: updateData,
+    return res.send(400, {
+      message: "Cập nhật không thành công",
     });
-  }
-  return res.send(400, {
-    message: "Cập nhật không thành công",
+  })
+  .catch((err) => {
+    return res.status(400).json({ type: "Xác thực thất bại", errors: err.errors, provider: 'yup' });
   });
 });
 
