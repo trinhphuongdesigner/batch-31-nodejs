@@ -2,7 +2,7 @@ let products = require('../../data/products.json');
 const { generationID, writeFileSync, fuzzySearch, combineObjects } = require('../../helper');
 
 module.exports = {
-  getList: async (req, res, next) => {
+  getAll: async (req, res, next) => {
     res.send(200, {
       message: "Thành công",
       payload: products.filter((item) => !item.isDeleted),

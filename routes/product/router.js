@@ -3,18 +3,18 @@ var router = express.Router();
 
 const { validateSchema } = require('../../helper')
 
-const { getDetail, getList, search, create, update, updatePatch, hardDelete, softDelete } = require('./controller');
+const { getDetail, getAll, search, create, update, updatePatch, hardDelete, softDelete } = require('./controller');
 const { checkIdSchema, validationProductInfoSchema, validationProductUpdateSchema } = require('./validation');
 
 
 // /* GET LIST. */
-// router.get('/', getList);
+// router.get('/', getAll);
 
 // /* CREATE. */
 // router.post('/', validateSchema(validationProductInfoSchema), create);
 
-router.route('/:')
-  .get(getList)
+router.route('/')
+  .get(getAll)
   .post(validateSchema(validationProductInfoSchema), create)
 
 /* SEARCH LIST. */

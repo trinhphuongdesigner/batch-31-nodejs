@@ -1,11 +1,11 @@
-let categories = require('../../data/categories.json');
+let suppliers = require('../../data/suppliers.json');
 const { generationID, writeFileSync, fuzzySearch, combineObjects } = require('../../helper');
 
 module.exports = {
   getAll: async (req, res, next) => {
     res.send(200, {
       message: "Thành công",
-      payload: categories.filter((item) => !item.isDeleted),
+      payload: suppliers.filter((item) => !item.isDeleted),
     });
   },
 
@@ -16,13 +16,13 @@ module.exports = {
     if (name) {
       const searchRex = fuzzySearch(name);
   
-      productFilter = categories.filter((item) => {
+      productFilter = suppliers.filter((item) => {
         if (!item.isDeleted && searchRex.test(item.name)) {
           return item;
         }
       })
     } else {
-      productFilter = categories.filter((item) => !item.isDeleted);
+      productFilter = suppliers.filter((item) => !item.isDeleted);
     }
   
     res.send(200, {
@@ -33,10 +33,10 @@ module.exports = {
 
   getDetail: async (req, res, next) => {
     const { id } = req.params;
-    const category = categories.find((item) => item.id.toString() === id.toString());
+    const supplier = suppliers.find((item) => item.id.toString() === id.toString());
   
-    if (category) {
-      if (category.isDeleted) {
+    if (supplier) {
+      if (supplier.isDeleted) {
         return res.send(400, {
           message: "Sản phẩm đã bị xóa",
         });
@@ -44,7 +44,7 @@ module.exports = {
   
       return res.send(200, {
         message: "Thành công",
-        payload: category,
+        payload: supplier,
       });
     }
   
@@ -54,13 +54,28 @@ module.exports = {
   },
 
   create: async (req, res, next) => {
-    const { name, description, isDeleted } = req.body;
-    const newCategories = [
-      ...categories,
-      { id: generationID(), name, description, isDeleted }
+    const { name, email, phoneNumber, address, isDeleted } = req.body;
+
+    const existEmail = await suppliers.find((item) => item.email === email);
+    if (existEmail) {
+      return res.send(400, {
+        message: "Email đã tồn tại",
+      });
+    }
+
+    const existPhone = await suppliers.find((item) => item.phoneNumber === phoneNumber);
+    if (existPhone) {
+      return res.send(400, {
+        message: "SDT đã tồn tại",
+      });
+    }
+
+    const newSuppliers = [
+      ...suppliers,
+      { id: generationID(), name, email, phoneNumber, address, isDeleted }
     ];
   
-    writeFileSync('./data/categories.json', newCategories);
+    writeFileSync('./data/suppliers.json', newSuppliers);
   
     return res.send(200, {
       message: "Thành công",
@@ -69,18 +84,30 @@ module.exports = {
 
   update: async (req, res, next) => {
     const { id } = req.params;
-    const { name, description, isDeleted } = req.body; 
+    const { name, email, phoneNumber, address, isDeleted } = req.body; 
+
+    
+    const existEmail = await suppliers.find((item) => item.email === email);
+    if (existEmail) {
+      return res.send(400, {
+        message: "Email đã tồn tại",
+      });
+    }
+
+    const existPhone = await suppliers.find((item) => item.phoneNumber === phoneNumber);
+    if (existPhone) {
+      return res.send(400, {
+        message: "SDT đã tồn tại",
+      });
+    }
 
     const updateData = {
-      id,
-      name,
-      description,
-      isDeleted,
+      id, name, email, phoneNumber, address, isDeleted
     };
   
     let isErr = false;
   
-    const newCategories = categories.map((item) => {
+    const newSuppliers = suppliers.map((item) => {
       if (item.id.toString() === id.toString()) {
         if (item.isDeleted) {
           isErr = true;
@@ -94,7 +121,7 @@ module.exports = {
     })
   
     if (!isErr) {
-      writeFileSync('./data/categories.json', newCategories);
+      writeFileSync('./data/suppliers.json', newSuppliers);
   
       return res.send(200, {
         message: "Thành công",
@@ -109,7 +136,7 @@ module.exports = {
   softDelete: async (req, res, next) => {
     const { id } = req.params;
   
-    const newCategories = categories.map((item) => {
+    const newSuppliers = suppliers.map((item) => {
       if (item.id.toString() === id.toString()) {
         return {
           ...item,
@@ -120,7 +147,7 @@ module.exports = {
       return item;
     })
   
-    await writeFileSync('./data/categories.json', newCategories);
+    await writeFileSync('./data/suppliers.json', newSuppliers);
   
     return res.send(200, {
       message: "Thành công xóa",
