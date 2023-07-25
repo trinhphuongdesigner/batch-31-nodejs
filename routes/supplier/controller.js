@@ -86,7 +86,6 @@ module.exports = {
     const { id } = req.params;
     const { name, email, phoneNumber, address, isDeleted } = req.body; 
 
-    
     const existEmail = await suppliers.find((item) => item.email === email);
     if (existEmail) {
       return res.send(400, {
