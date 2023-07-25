@@ -1,4 +1,6 @@
 let products = require('../../data/products.json');
+let suppliers = require('../../data/suppliers.json');
+let categories = require('../../data/categories.json');
 const { generationID, writeFileSync, fuzzySearch, combineObjects } = require('../../helper');
 
 module.exports = {
@@ -54,10 +56,25 @@ module.exports = {
   },
 
   create: async (req, res, next) => {
-    const { name, price, discount, stock, description, isDeleted } = req.body;
+    const { name, price, discount, stock, description, isDeleted, supplierId, categoryId } = req.body;
+
+    const existSupplier = await suppliers.find((item) => item.id.toString() === supplierId.toString());
+    if (!existSupplier || existSupplier.isDeleted) {
+      return res.send(400, {
+        message: "Nhà cung cấp không khả dụng",
+      });
+    }
+
+    const existCategory = await categories.find((item) => item.id.toString() === categoryId.toString());
+    if (!existCategory || existCategory.isDeleted) {
+      return res.send(400, {
+        message: "Danh mục không khả dụng",
+      });
+    }
+
     const newProductList = [
       ...products,
-      { id: generationID(), name, price, discount, stock, description, isDeleted }
+      { id: generationID(), name, price, discount, stock, description, isDeleted, categoryId, supplierId }
     ];
   
     writeFileSync('./data/products.json', newProductList);
@@ -69,9 +86,24 @@ module.exports = {
   },
 
   update: async (req, res, next) => {
-
     const { id } = req.params;
-    const { name, price, description, discount, stock, isDeleted } = req.body; // case 1
+    const { name, price, description, discount, stock, isDeleted,  categoryId, supplierId } = req.body; // case 1
+
+    
+    const existSupplier = await suppliers.find((item) => item.id.toString() === supplierId.toString());
+    if (!existSupplier || existSupplier.isDeleted) {
+      return res.send(400, {
+        message: "Nhà cung cấp không khả dụng",
+      });
+    }
+
+    const existCategory = await categories.find((item) => item.id.toString() === categoryId.toString());
+    if (!existCategory || existCategory.isDeleted) {
+      return res.send(400, {
+        message: "Danh mục không khả dụng",
+      });
+    }
+
   
     // const product = products.find((item) => item.id.toString() === id.toString());
   
@@ -89,6 +121,8 @@ module.exports = {
       discount,
       stock,
       isDeleted,
+      categoryId,
+      supplierId,
     };
   
     let isErr = false;
