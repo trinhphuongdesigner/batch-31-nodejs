@@ -13,8 +13,8 @@ module.exports = {
       const category = categories.find((item) => item.id.toString() === categoryId.toString());
       const supplier = suppliers.find((item) => item.id.toString() === supplierId.toString());
 
-      delete product['supplierId'];
-      delete product['categoryId'];
+      // delete product['supplierId'];
+      // delete product['categoryId'];
 
       return {
         ...product,
