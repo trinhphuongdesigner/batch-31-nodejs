@@ -1,3 +1,5 @@
+const { Product, Category, Supplier } = require('../../models');
+
 let products = require('../../data/products.json');
 let suppliers = require('../../data/suppliers.json');
 let categories = require('../../data/categories.json');
@@ -45,10 +47,10 @@ module.exports = {
       productFilter = productFilter.map((product) => {
         const { supplierId, categoryId } = product;
         console.log('««««« product »»»»»', product);
-  
+
         const category = categories.find((item) => item.id.toString() === categoryId.toString());
         const supplier = suppliers.find((item) => item.id.toString() === supplierId.toString());
-  
+
         // delete product['supplierId'];
         // delete product['categoryId'];
         return {
@@ -62,13 +64,13 @@ module.exports = {
 
       productFilter = productFilter.map((product) => {
         const { supplierId, categoryId } = product;
-  
+
         const category = categories.find((item) => item.id.toString() === categoryId.toString());
         const supplier = suppliers.find((item) => item.id.toString() === supplierId.toString());
-  
+
         delete product['supplierId'];
         delete product['categoryId'];
-  
+
         return {
           ...product,
           category,
@@ -118,33 +120,40 @@ module.exports = {
   },
 
   create: async (req, res, next) => {
-    const { name, price, discount, stock, description, isDeleted, supplierId, categoryId } = req.body;
+    try {
+      const { name, price, discount, stock, description, supplierId, categoryId } = req.body;
 
-    const existSupplier = await suppliers.find((item) => item.id.toString() === supplierId.toString());
-    if (!existSupplier || existSupplier.isDeleted) {
-      return res.send(400, {
-        message: "Nhà cung cấp không khả dụng",
+      const existSupplier = await Supplier.findById(supplierId);
+      if (!existSupplier || existSupplier.isDeleted) {
+        return res.send(400, {
+          message: "Nhà cung cấp không khả dụng",
+        });
+      }
+
+      const existCategory = await Category.findById(categoryId);
+      if (!existCategory || existCategory.isDeleted) {
+        return res.send(400, {
+          message: "Danh mục không khả dụng",
+        });
+      }
+
+      const newRecord = new Product({
+        name, price, discount, stock, description, supplierId, categoryId,
+      });
+
+      let result = await newRecord.save();
+
+      return res.send(200, {
+        message: "Thành công",
+        payload: result,
+      });
+    } catch (error) {
+      console.log('««««« error »»»»»', error);
+      return res.send(404, {
+        message: "Có lỗi",
+        error,
       });
     }
-
-    const existCategory = await categories.find((item) => item.id.toString() === categoryId.toString());
-    if (!existCategory || existCategory.isDeleted) {
-      return res.send(400, {
-        message: "Danh mục không khả dụng",
-      });
-    }
-
-    const newProductList = [
-      ...products,
-      { id: generationID(), name, price, discount, stock, description, isDeleted, categoryId, supplierId }
-    ];
-
-    writeFileSync('./data/products.json', newProductList);
-
-    return res.send(200, {
-      message: "Thành công",
-      // payload: products,
-    });
   },
 
   update: async (req, res, next) => {

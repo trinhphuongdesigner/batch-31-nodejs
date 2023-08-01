@@ -113,8 +113,6 @@ module.exports = {
       { new: true },
     );
 
-    console.log('««««« result »»»»»', result);
-
     if (result) {
       return res.send(200, {
         message: "Cập nhật thành công",
