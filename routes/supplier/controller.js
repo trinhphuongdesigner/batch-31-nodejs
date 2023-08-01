@@ -1,6 +1,6 @@
 const { Supplier } = require('../../models');
 let suppliers = require('../../data/suppliers.json');
-const { generationID, writeFileSync, fuzzySearch, combineObjects } = require('../../helper');
+const { writeFileSync, fuzzySearch } = require('../../helper');
 
 module.exports = {
   getAll: async (req, res, next) => {
@@ -80,7 +80,7 @@ module.exports = {
         payload: result,
       });
     } catch (error) {
-        return res.send(404, {
+      return res.send(404, {
         message: "Không tìm thấy",
         error,
       })
@@ -88,73 +88,59 @@ module.exports = {
   },
 
   update: async (req, res, next) => {
-    const { id } = req.params;
-    const { name, email, phoneNumber, address, isDeleted } = req.body;
+    try {
+      const { id } = req.params;
+      const { name, email, phoneNumber, address } = req.body;
 
-    const existEmail = await suppliers.find((item) => item.email === email);
-    if (existEmail) {
-      return res.send(400, {
-        message: "Email đã tồn tại",
-      });
-    }
+      const result = await Supplier.findOneAndUpdate(
+        { _id: id, isDeleted: false },
+        { name, email, phoneNumber, address },
+        { new: true },
+      );
 
-    const existPhone = await suppliers.find((item) => item.phoneNumber === phoneNumber);
-    if (existPhone) {
-      return res.send(400, {
-        message: "SDT đã tồn tại",
-      });
-    }
-
-    const updateData = {
-      id, name, email, phoneNumber, address, isDeleted
-    };
-
-    let isErr = false;
-
-    const newSuppliers = suppliers.map((item) => {
-      if (item.id.toString() === id.toString()) {
-        if (item.isDeleted) {
-          isErr = true;
-          return item;
-        } else {
-          return updateData;
-        }
+      if (result) {
+        return res.send(200, {
+          message: "Cập nhật thành công",
+          payload: result,
+        });
       }
 
-      return item;
-    })
-
-    if (!isErr) {
-      writeFileSync('./data/suppliers.json', newSuppliers);
-
-      return res.send(200, {
-        message: "Thành công",
-        payload: updateData,
+      return res.send(400, {
+        message: "Thất bại",
+      });
+    } catch (error) {
+      return res.send(404, {
+        message: "Không tìm thấy",
+        error,
       });
     }
-    return res.send(400, {
-      message: "Cập nhật không thành công",
-    });
   },
 
   softDelete: async (req, res, next) => {
-    const { id } = req.params;
+    try {
+      const { id } = req.params;
 
-    const newSuppliers = suppliers.map((item) => {
-      if (item.id.toString() === id.toString()) {
-        return {
-          ...item,
-          isDeleted: true,
-        };
-      };
+      const result = await Supplier.findByIdAndUpdate(
+        id,
+        { isDeleted: true },
+        { new: true },
+      );
 
-      return item;
-    })
+      if (result) {
+        return res.send(200, {
+          message: "Cập nhật thành công",
+          payload: result,
+        });
+      }
 
-    await writeFileSync('./data/suppliers.json', newSuppliers);
-
-    return res.send(200, {
-      message: "Thành công xóa",
-    });
+      return res.send(400, {
+        message: "Thất bại",
+      });
+    } catch (error) {
+      return res.send(404, {
+        message: "Không tìm thấy",
+        error,
+      });
+    }
   },
 };
