@@ -1,6 +1,5 @@
 const { Supplier } = require('../../models');
-let suppliers = require('../../data/suppliers.json');
-const { writeFileSync, fuzzySearch } = require('../../helper');
+const { fuzzySearch } = require('../../helper');
 
 module.exports = {
   getAll: async (req, res, next) => {
@@ -128,7 +127,7 @@ module.exports = {
 
       if (result) {
         return res.send(200, {
-          message: "Cập nhật thành công",
+          message: "Xóa thành công",
           payload: result,
         });
       }

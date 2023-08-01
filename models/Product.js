@@ -13,9 +13,9 @@ const productSchema = Schema(
     discount: { type: Number, min: 0, max: 75, default: 0 },
     stock: { type: Number, min: 0, default: 0 },
     // Reference to Category
-    categoryId: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
+    categoryId: { type: Schema.Types.ObjectId, ref: 'categories', required: true },
     // Reference to Supplier
-    supplierId: { type: Schema.Types.ObjectId, ref: 'Supplier', required: true },
+    supplierId: { type: Schema.Types.ObjectId, ref: 'suppliers', required: true },
     description: {
       type: String,
       maxLength: [500, 'Mô tả không được vượt quá 500 ký tự'],
@@ -38,14 +38,14 @@ productSchema.virtual('discountedPrice').get(function () {
 
 // Virtual with Populate
 productSchema.virtual('category', {
-  ref: 'Category',
+  ref: 'categories',
   localField: 'categoryId',
   foreignField: '_id',
   justOne: true,
 });
 
 productSchema.virtual('supplier', {
-  ref: 'Supplier',
+  ref: 'suppliers',
   localField: 'supplierId',
   foreignField: '_id',
   justOne: true,
