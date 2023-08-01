@@ -1,90 +1,95 @@
+const { Supplier } = require('../../models');
 let suppliers = require('../../data/suppliers.json');
 const { generationID, writeFileSync, fuzzySearch, combineObjects } = require('../../helper');
 
 module.exports = {
   getAll: async (req, res, next) => {
-    res.send(200, {
-      message: "Thành công",
-      payload: suppliers.filter((item) => !item.isDeleted),
-    });
+    try {
+      const result = await Supplier.find({ isDeleted: false });
+
+      res.send(200, {
+        message: "Thành công",
+        payload: result,
+      });
+    } catch (error) {
+      return res.send(404, {
+        message: "Không tìm thấy",
+      })
+    }
   },
 
   search: async (req, res, next) => {
-    const { name } = req.query;
-    let productFilter = [];
-  
-    if (name) {
-      const searchRex = fuzzySearch(name);
-  
-      productFilter = suppliers.filter((item) => {
-        if (!item.isDeleted && searchRex.test(item.name)) {
-          return item;
-        }
+    try {
+      const { name, address } = req.query;
+      const conditionFind = { isDeleted: false };
+
+      if (name) conditionFind.name = fuzzySearch(name);
+      if (address) conditionFind.address = fuzzySearch(address);
+
+      const result = await Supplier.find(conditionFind)
+
+      res.send(200, {
+        message: "Thành công",
+        payload: result,
+      });
+    } catch (error) {
+      return res.send(404, {
+        message: "Không tìm thấy",
       })
-    } else {
-      productFilter = suppliers.filter((item) => !item.isDeleted);
     }
-  
-    res.send(200, {
-      message: "Thành công",
-      payload: productFilter,
-    });
   },
 
   getDetail: async (req, res, next) => {
-    const { id } = req.params;
-    const supplier = suppliers.find((item) => item.id.toString() === id.toString());
-  
-    if (supplier) {
-      if (supplier.isDeleted) {
-        return res.send(400, {
-          message: "Sản phẩm đã bị xóa",
+    try {
+      const { id } = req.params;
+
+      const result = await Supplier.findOne({
+        _id: id,
+        isDeleted: false,
+      });
+
+      if (result) {
+        return res.send(200, {
+          message: "Thành công",
+          payload: result,
         });
       }
-  
-      return res.send(200, {
-        message: "Thành công",
-        payload: supplier,
-      });
+
+      return res.send(404, {
+        message: "Không tìm thấy",
+      })
+    } catch (error) {
+      return res.send(404, {
+        message: "Không tìm thấy",
+      })
     }
-  
-    return res.send(404, {
-      message: "Không tìm thấy",
-    })
   },
 
   create: async (req, res, next) => {
-    const { name, email, phoneNumber, address, isDeleted } = req.body;
+    try {
+      const { name, email, phoneNumber, address } = req.body;
 
-    const existEmail = await suppliers.find((item) => item.email === email);
-    if (existEmail) {
-      return res.send(400, {
-        message: "Email đã tồn tại",
+      const newRecord = new Supplier({
+        name, email, phoneNumber, address,
       });
-    }
 
-    const existPhone = await suppliers.find((item) => item.phoneNumber === phoneNumber);
-    if (existPhone) {
-      return res.send(400, {
-        message: "SDT đã tồn tại",
+      let result = await newRecord.save();
+
+      return res.send(200, {
+        message: "Thành công",
+        payload: result,
       });
+    } catch (error) {
+        return res.send(404, {
+        message: "Không tìm thấy",
+        error,
+      })
     }
-
-    const newSuppliers = [
-      ...suppliers,
-      { id: generationID(), name, email, phoneNumber, address, isDeleted }
-    ];
-  
-    writeFileSync('./data/suppliers.json', newSuppliers);
-  
-    return res.send(200, {
-      message: "Thành công",
-    });
   },
 
   update: async (req, res, next) => {
     const { id } = req.params;
-    const { name, email, phoneNumber, address, isDeleted } = req.body; 
+    const { name, email, phoneNumber, address, isDeleted } = req.body;
 
     const existEmail = await suppliers.find((item) => item.email === email);
     if (existEmail) {
@@ -103,9 +108,9 @@ module.exports = {
     const updateData = {
       id, name, email, phoneNumber, address, isDeleted
     };
-  
+
     let isErr = false;
-  
+
     const newSuppliers = suppliers.map((item) => {
       if (item.id.toString() === id.toString()) {
         if (item.isDeleted) {
@@ -115,13 +120,13 @@ module.exports = {
           return updateData;
         }
       }
-  
+
       return item;
     })
-  
+
     if (!isErr) {
       writeFileSync('./data/suppliers.json', newSuppliers);
-  
+
       return res.send(200, {
         message: "Thành công",
         payload: updateData,
@@ -134,7 +139,7 @@ module.exports = {
 
   softDelete: async (req, res, next) => {
     const { id } = req.params;
-  
+
     const newSuppliers = suppliers.map((item) => {
       if (item.id.toString() === id.toString()) {
         return {
@@ -142,12 +147,12 @@ module.exports = {
           isDeleted: true,
         };
       };
-  
+
       return item;
     })
-  
+
     await writeFileSync('./data/suppliers.json', newSuppliers);
-  
+
     return res.send(200, {
       message: "Thành công xóa",
     });

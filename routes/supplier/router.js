@@ -17,6 +17,6 @@ router.route('/:id')
   .get(validateSchema(checkIdSchema), getDetail)
   .put(validateSchema(checkIdSchema), validateSchema(validationSchema), update)
 
-router.patch('/delete/:id', softDelete);
+router.patch('/delete/:id', validateSchema(checkIdSchema), softDelete);
 
 module.exports = router;

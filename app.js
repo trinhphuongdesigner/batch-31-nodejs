@@ -4,6 +4,7 @@ const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const cors = require('cors');
+const { default: mongoose } = require('mongoose');
 require('dotenv').config();
 
 const indexRouter = require('./routes/index');
@@ -32,6 +33,8 @@ app.use(
     origin: '*',
   }),
 );
+
+mongoose.connect('mongodb://127.0.0.1:27017/node-31-database');
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

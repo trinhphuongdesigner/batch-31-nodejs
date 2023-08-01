@@ -1,11 +1,5 @@
-const { default: mongoose } = require('mongoose');
-
 const { Category } = require('../../models');
-const { generationID, writeFileSync, fuzzySearch, combineObjects } = require('../../helper');
-let categories = require('../../data/categories.json');
-
-// mongoose.connect('mongodb://localhost:27017/node-31-database');
-mongoose.connect('mongodb://127.0.0.1:27017/node-31-database');
+const { fuzzySearch } = require('../../helper');
 
 module.exports = {
   getAll: async (req, res, next) => {

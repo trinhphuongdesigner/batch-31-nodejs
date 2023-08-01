@@ -19,10 +19,6 @@ const validationSchema = yup.object().shape({
     address: yup.string()
       .max(50, "Quá dài")
       .required("Không được bỏ trống"),
-
-    isDeleted: yup.boolean()
-      .required(({ path }) => `${path
-      .split(".")[1]} không được bỏ trống`),
   }),
 });
 
