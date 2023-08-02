@@ -14,6 +14,11 @@ const welcomeRouter = require('./routes/welcome');
 const productRouter = require('./routes/product/router');
 const categoryRouter = require('./routes/category/router');
 const supplierRouter = require('./routes/supplier/router');
+const cartRouter = require('./routes/cart/router');
+const customerRouter = require('./routes/customer/router');
+const employeeRouter = require('./routes/employee/router');
+const orderRouter = require('./routes/order/router');
+const questionsRouter = require('./routes/questions/router');
 
 const app = express();
 
@@ -37,12 +42,15 @@ app.use(
 mongoose.connect('mongodb://127.0.0.1:27017/node-31-database');
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/welcome', welcomeRouter);
 
 app.use('/products', productRouter);
 app.use('/categories', categoryRouter);
 app.use('/suppliers', supplierRouter);
+app.use('/cart', cartRouter);
+app.use('/customers', customerRouter);
+app.use('/employees', employeeRouter);
+app.use('/orders', orderRouter);
+app.use('/questions', questionsRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

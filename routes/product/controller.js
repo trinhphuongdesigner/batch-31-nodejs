@@ -10,7 +10,7 @@ module.exports = {
         .populate('category')
         .populate('supplier')
         .lean();
-  
+
       return res.send({ code: 200, payload: results });
     } catch (err) {
       return res.send(404, {
@@ -27,11 +27,11 @@ module.exports = {
 
       if (name) conditionFind.name = fuzzySearch(name);
 
-      if(categoryId) {
+      if (categoryId) {
         conditionFind.categoryId = categoryId;
       };
 
-      if(supplierId) {
+      if (supplierId) {
         conditionFind.supplierId = supplierId;
       };
 
@@ -40,14 +40,14 @@ module.exports = {
         const compareEnd = { $gte: ['$price', priceStart] };
         conditionFind.$expr = { $and: [compareStart, compareEnd] };
       } else if (priceStart) {
-        conditionFind.price = {$gte : parseFloat(priceStart)};
+        conditionFind.price = { $gte: parseFloat(priceStart) };
       } else if (priceEnd) {
-        conditionFind.price ={$lte : parseFloat(priceEnd)};
+        conditionFind.price = { $lte: parseFloat(priceEnd) };
       }
 
       const result = await Product.find(conditionFind)
-      .populate('category')
-      .populate('supplier');
+        .populate('category')
+        .populate('supplier');
 
       res.send(200, {
         message: "Thành công",
@@ -63,18 +63,18 @@ module.exports = {
   getDetail: async (req, res, next) => {
     try {
       const { id } = req.params;
-  
+
       let result = await Product.findOne({
         _id: id,
         isDeleted: false,
       })
         .populate('category')
         .populate('supplier');
-  
+
       if (result) {
         return res.send({ code: 200, payload: result });
       }
-  
+
       return res.status(404).send({ code: 404, message: 'Không tìm thấy' });
     } catch (err) {
       res.status(404).json({
@@ -88,14 +88,21 @@ module.exports = {
     try {
       const { name, price, discount, stock, description, supplierId, categoryId } = req.body;
 
-      const existSupplier = await Supplier.findById(supplierId);
+      const existSupplier = await Supplier.find({
+        _id: supplierId,
+        isDeleted: true,
+      });
+
       if (!existSupplier || existSupplier.isDeleted) {
         return res.send(400, {
           message: "Nhà cung cấp không khả dụng",
         });
       }
 
-      const existCategory = await Category.findById(categoryId);
+      const existCategory = await Category.find({
+        _id: categoryId,
+        isDeleted: true,
+      });
       if (!existCategory || existCategory.isDeleted) {
         return res.send(400, {
           message: "Danh mục không khả dụng",
@@ -125,36 +132,46 @@ module.exports = {
       const { id } = req.params;
       const { name, price, discount, stock, description, supplierId, categoryId } = req.body;
 
-      const existSupplier = await Supplier.findById(supplierId);
-      if (!existSupplier || existSupplier.isDeleted) {
-        return res.send(400, {
-          message: "Nhà cung cấp không khả dụng",
-        });
+      // Check if the product exists and is not deleted
+      const product = await Product.findOne({ _id: id, isDeleted: false });
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
       }
 
-      const existCategory = await Category.findById(categoryId);
-      if (!existCategory || existCategory.isDeleted) {
-        return res.send(400, {
-          message: "Danh mục không khả dụng",
-        });
+      // Check if the supplier exists and is not deleted
+      if (product.supplierId !== supplierId) {
+        const supplier = await Supplier.findOne({ _id: supplierId, isDeleted: false });
+
+        if (!supplier) {
+          return res.status(400).json({ message: "Supplier not available" });
+        }
       }
 
-      const result = await Product.findOneAndUpdate(
+      // Check if the category exists and is not deleted
+      if (product.categoryId !== categoryId) {
+        const category = await Category.findOne({ _id: categoryId, isDeleted: false });
+
+        if (!category) {
+          return res.status(400).json({ message: "Category not available" });
+        }
+      }
+
+      // Update the product
+      const updatedProduct = await Product.findByIdAndUpdate(
         { _id: id, isDeleted: false },
-        { name, price, discount, stock, description, supplierId, categoryId, },
-        { new: true },
+        { name, price, discount, stock, description, supplierId, categoryId },
+        { new: true }
       );
 
-      if (result) {
-        return res.send(200, {
-          message: "Cập nhật thành công",
-          payload: result,
+      if (updatedProduct) {
+        return res.status(200).json({
+          message: "Update successful",
+          payload: updatedProduct,
         });
       }
 
-      return res.send(400, {
-        message: "Thất bại",
-      });
+      return res.status(400).json({ message: "Update failed" });
     } catch (error) {
       console.log('««««« error »»»»»', error);
       return res.send(404, {
