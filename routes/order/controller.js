@@ -100,21 +100,31 @@ module.exports = {
     }
   },
 
-  remove: async function (req, res, next) {
+  updateStatus: async function (req, res, next) {
     try {
       const { id } = req.params;
+      const { status } = req.body;
 
-      let found = await Order.findByIdAndDelete(id);
+      let found = await Order.findOne({
+        _id: id,
+        $nor: [{ status: 'CANCELED' }, { status: 'REJECTED' }, { status: 'COMPLETED' }]
+      });
 
       if (found) {
+        const result = await Order.findByIdAndUpdate(
+          found._id,
+          { status },
+          { new: true },
+        );
+
         return res.send({
           code: 200,
-          payload: found,
-          message: 'Xóa thành công',
+          payload: result,
+          message: 'Cập nhật trạng thái thành công',
         });
       }
 
-      return res.status(410).send({ code: 404, message: 'Không tìm thấy' });
+      return res.status(410).send({ code: 404, message: 'Thất bại' });
     } catch (err) {
       return res.status(500).json({ code: 500, error: err });
     }

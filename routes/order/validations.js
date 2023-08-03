@@ -32,6 +32,17 @@ module.exports = {
     }),
   }),
 
+  updateStatusSchema: yup.object({
+    body: yup.object({
+      status: yup.string().test('validationStatus', 'Trạng thái không hợp lệ', (value) => {
+          if (['WAITING', 'COMPLETED', 'CANCELED', 'REJECTED', 'DELIVERING'].includes(value)) {
+            return true;
+          }
+          return false;
+      }),
+    }),
+  }),
+
   createSchema: yup.object({
     body: yup.object({
       createdDate: yup.date(),

@@ -90,11 +90,11 @@ const orderSchema = new Schema(
     },
     customerId: { type: Schema.Types.ObjectId, ref: 'Customer', required: true },
     employeeId: { type: Schema.Types.ObjectId, ref: 'Employee' },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-      required: true,
-    },
+    // isDeleted: {
+    //   type: Boolean,
+    //   default: false,
+    //   required: true,
+    // },
     // Array
     orderDetails: [orderDetailSchema],
   },
