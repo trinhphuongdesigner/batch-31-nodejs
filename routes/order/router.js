@@ -5,6 +5,7 @@ const { validateSchema } = require('../../helper');
 const {
   getDetailSchema,
   createSchema,
+  updateSchema,
 } = require('./validations');
 const {
   getAll,
@@ -20,7 +21,7 @@ router.route('/')
 
 router.route('/:id')
   .get(validateSchema(getDetailSchema), getDetail)
-  .patch(validateSchema(createSchema), update)
+  .patch(validateSchema(updateSchema), update)
   .delete(validateSchema(getDetailSchema), remove)
 
 module.exports = router;

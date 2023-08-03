@@ -37,8 +37,15 @@ module.exports = {
 
       const { customerId, employeeId, orderDetails } = data;
 
-      const getCustomer = Customer.findById(customerId);
-      const getEmployee = Employee.findById(employeeId);
+      const getCustomer = Customer.findOne({
+        _id: customerId,
+        isDeleted: false,
+      });
+
+      const getEmployee = Employee.findOne({
+        _id: employeeId,
+        isDeleted: false,
+      });
 
       const [customer, employee] = await Promise.all([
         getCustomer,
@@ -52,10 +59,15 @@ module.exports = {
         errors.push('Nhân viên không tồn tại');
 
       await asyncForEach(orderDetails, async (item) => {
-        const product = await Product.findById(item.productId);
+        const product = await Product.findOne({
+          _id: item.productId,
+          isDeleted: false,
+          // stock: { $gte : item.quantity },
+        });
 
-        if (!product)
-          errors.push(`Sản phẩm ${item.productId} không có trong hệ thống`);
+        if (!product) errors.push(`Sản phẩm ${item.productId} không khả dung`);
+
+        if (product && product.stock < item.quantity) errors.push(`Số lượng sản phẩm ${item.productId} không khả dụng`);
       });
 
       if (errors.length > 0) {
@@ -69,6 +81,13 @@ module.exports = {
       const newItem = new Order(data);
 
       let result = await newItem.save();
+
+      await asyncForEach(result.orderDetails, async (item) => {
+        await Product.findOneAndUpdate(
+          { _id: item.productId },
+          { $inc: { stock: -item.quantity } }
+          );
+      });
 
       return res.send({
         code: 200,
@@ -106,28 +125,13 @@ module.exports = {
       const { id } = req.params;
       const updateData = req.body;
 
-      const { customerId, employeeId, orderDetails } = updateData;
+      const { employeeId, shippedDate, status } = updateData;
 
-      const getCustomer = Customer.findById(customerId);
-      const getEmployee = Employee.findById(employeeId);
-
-      const [customer, employee] = await Promise.all([
-        getCustomer,
-        getEmployee,
-      ]);
+      const employee = await Employee.findById(employeeId);
 
       const errors = [];
-      if (!customer || customer.isDelete)
-        errors.push('Khách hàng không tồn tại');
       if (!employee || employee.isDelete)
         errors.push('Nhân viên không tồn tại');
-
-      await asyncForEach(orderDetails, async (item) => {
-        const product = await Product.findById(item.productId);
-
-        if (!product)
-          errors.push(`Sản phẩm ${item.productId} không có trong hệ thống`);
-      });
 
       if (errors.length > 0) {
         return res.status(404).json({

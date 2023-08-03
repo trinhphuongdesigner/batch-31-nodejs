@@ -102,7 +102,7 @@ module.exports = {
         email,
         _id: { $ne: id }
       });
-      
+
       const getPhoneExits = Employee.find({
         phoneNumber,
         _id: { $ne: id }

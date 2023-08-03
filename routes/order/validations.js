@@ -89,4 +89,34 @@ module.exports = {
       ),
     }),
   }),
+
+  updateSchema: yup.object({
+    body: yup.object({
+      shippedDate: yup
+        .date()
+        .test('check date', '${path} ngày tháng không hợp lệ', (value) => {
+          if (!value) return true;
+
+          if (value && this.createdDate && value < this.createdDate) {
+            return false;
+          }
+
+          if (value < new Date()) {
+            return false;
+          }
+
+          return true;
+        }),
+
+      status: yup.string()
+        .required()
+        .oneOf(['WAITING', 'COMPLETED', 'CANCELED'], 'Trạng thái không hợp lệ'),
+
+      employeeId: yup
+        .string()
+        .test('validationEmployeeID', 'ID sai định dạng', (value) => {
+          return ObjectId.isValid(value);
+        }),
+    }),
+  }),
 };

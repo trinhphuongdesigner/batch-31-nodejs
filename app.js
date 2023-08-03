@@ -12,10 +12,11 @@ const indexRouter = require('./routes/index');
 const productRouter = require('./routes/product/router');
 const categoryRouter = require('./routes/category/router');
 const supplierRouter = require('./routes/supplier/router');
-const cartRouter = require('./routes/cart/router');
 const customerRouter = require('./routes/customer/router');
 const employeeRouter = require('./routes/employee/router');
+
 const orderRouter = require('./routes/order/router');
+const cartRouter = require('./routes/cart/router');
 const questionsRouter = require('./routes/questions/router');
 
 const app = express();
