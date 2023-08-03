@@ -8,8 +8,6 @@ const { default: mongoose } = require('mongoose');
 require('dotenv').config();
 
 const indexRouter = require('./routes/index');
-const usersRouter = require('./routes/users');
-const welcomeRouter = require('./routes/welcome');
 
 const productRouter = require('./routes/product/router');
 const categoryRouter = require('./routes/category/router');

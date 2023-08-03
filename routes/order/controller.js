@@ -1,5 +1,5 @@
 const { Order, Customer, Employee, Product } = require('../../models');
-const { asyncForEach } = require('../../utils');
+const { asyncForEach } = require('../../helper');
 
 module.exports = {
   getAll: async (req, res, next) => {

@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 
-const { validateSchema } = require('../../utils');
 const {
   getDetailSchema,
   removeSchema,
@@ -12,6 +11,7 @@ const {
   create,
   remove,
 } = require('./controller');
+const { validateSchema } = require('../../helper');
 
 router.route('/')
   .post(validateSchema(createSchema), create)

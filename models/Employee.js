@@ -2,12 +2,6 @@ const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 // const bcrypt = require('bcryptjs');
 
-// Mongoose Datatypes:
-// https://mongoosejs.com/docs/schematypes.html
-
-// Validator
-// https://mongoosejs.com/docs/validation.html#built-in-validators
-
 const employeeSchema = new Schema(
   {
     firstName: {
@@ -53,10 +47,21 @@ const employeeSchema = new Schema(
       unique: [true, 'Email không được trùng'],
     },
     birthday: { type: Date },
-    // password: { type: String, required: [true, 'Mật khẩu không được bỏ trống'] },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      minLength: [3, 'Không được ít hơn 3 ký tự'],
+      maxLength: [12, 'Không được vượt quá 12 ký tự'],
+    }
   },
   {
     versionKey: false,
+    timestamps: true,
   },
 );
 
@@ -104,5 +109,5 @@ employeeSchema.virtual('fullName').get(function () {
 //   });
 // });
 
-const Employee = model('Employee', employeeSchema);
+const Employee = model('employees', employeeSchema);
 module.exports = Employee;

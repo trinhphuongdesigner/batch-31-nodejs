@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { validateSchema } = require('../../utils');
+const { validateSchema } = require('../../helper');
 const {
   q1,
   q3a,

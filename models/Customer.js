@@ -2,12 +2,6 @@ const mongoose = require('mongoose');
 const { Schema, model } = mongoose;
 const mongooseLeanVirtuals = require('mongoose-lean-virtuals');
 
-// Mongoose Datatypes:
-// https://mongoosejs.com/docs/schematypes.html
-
-// Validator
-// https://mongoosejs.com/docs/validation.html#built-in-validators
-
 const customerSchema = new Schema(
   {
     firstName: {
@@ -53,6 +47,17 @@ const customerSchema = new Schema(
       unique: [true, 'Email không được trùng'],
     },
     birthday: { type: Date },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      minLength: [3, 'Không được ít hơn 3 ký tự'],
+      maxLength: [12, 'Không được vượt quá 12 ký tự'],
+    }
   },
   {
     versionKey: false,
@@ -70,5 +75,5 @@ customerSchema.set('toObject', { virtuals: true });
 //
 customerSchema.plugin(mongooseLeanVirtuals);
 
-const Customer = model('Customer', customerSchema);
+const Customer = model('customers', customerSchema);
 module.exports = Customer;

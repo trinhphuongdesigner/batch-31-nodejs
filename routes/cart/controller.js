@@ -1,5 +1,5 @@
 const { Cart, Customer, Product } = require('../../models');
-const { asyncForEach } = require('../../utils');
+const { asyncForEach } = require('../../helper');
 
 module.exports = {
   getDetail: async (req, res, next) => {
