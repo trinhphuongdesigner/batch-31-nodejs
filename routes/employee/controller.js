@@ -4,7 +4,9 @@ const { Employee } = require('../../models');
 module.exports = {
   getAll: async (req, res, next) => {
     try {
-      let results = await Employee.find()
+      let results = await Employee.find({
+        isDeleted: false,
+      })
   
       return res.send({ code: 200, payload: results });
     } catch (err) {
@@ -16,10 +18,13 @@ module.exports = {
     try {
       const { id } = req.params;
   
-      let found = await Employee.findById(id)
+      let result = await Employee.findOne({
+        _id: id,
+        isDeleted: false,
+      })
   
-      if (found) {
-        return res.send({ code: 200, payload: found });
+      if (result) {
+        return res.send({ code: 200, payload: result });
       }
   
       return res.status(410).send({ code: 404, message: 'Không tìm thấy' });
@@ -37,17 +42,15 @@ module.exports = {
 
       const { email, phoneNumber, address } = data;
 
-      const getEmailExits = Employee.find({ email });
-      const getPhoneExits = Employee.find({ phoneNumber });
-      const getAddressExits = Employee.find({ address });
+      const getEmailExits = Employee.findOne({ email });
+      const getPhoneExits = Employee.findOne({ phoneNumber });
 
-      const [foundEmail, foundPhoneNumber, foundAddress] = await Promise.all([getEmailExits, getPhoneExits, getAddressExits]);
+      const [foundEmail, foundPhoneNumber] = await Promise.all([getEmailExits, getPhoneExits]);
 
       const errors = [];
-      if (foundEmail && foundEmail.length > 0) errors.push('Email đã tồn tại');
+      if (foundEmail) errors.push('Email đã tồn tại');
       // if (!isEmpty(foundEmail)) errors.push('Email đã tồn tại');
-      if (foundPhoneNumber && foundPhoneNumber.length > 0) errors.push('Số điện thoại đã tồn tại');
-      if (foundAddress && foundAddress.length > 0) errors.push('Địa chỉ đã tồn tại');
+      if (foundPhoneNumber) errors.push('Số điện thoại đã tồn tại');
 
       if (errors.length > 0) {
         return res.status(404).json({
@@ -72,10 +75,14 @@ module.exports = {
     try {
       const { id } = req.params;
   
-      let found = await Employee.findByIdAndDelete(id);
+      let result = await Employee.findOneAndUpdate(
+        { _id: id,isDeleted: false },
+        { isDeleted: true },
+        { new: true },
+      );
   
-      if (found) {
-        return res.send({ code: 200, payload: found, message: 'Xóa thành công' });
+      if (result) {
+        return res.send({ code: 200, payload: result, message: 'Xóa thành công' });
       }
   
       return res.status(410).send({ code: 404, message: 'Không tìm thấy' });
@@ -89,19 +96,17 @@ module.exports = {
       const { id } = req.params;  
       const updateData = req.body;
       
-      const { email, phoneNumber, address } = updateData;
+      const { email, phoneNumber } = updateData;
 
       const getEmailExits = Employee.find({ email });
       const getPhoneExits = Employee.find({ phoneNumber });
-      const getAddressExits = Employee.find({ address });
 
-      const [foundEmail, foundPhoneNumber, foundAddress] = await Promise.all([getEmailExits, getPhoneExits, getAddressExits]);
+      const [foundEmail, foundPhoneNumber] = await Promise.all([getEmailExits, getPhoneExits]);
 
       const errors = [];
       if (foundEmail && foundEmail.length > 0) errors.push('Email đã tồn tại');
       // if (!isEmpty(foundEmail)) errors.push('Email đã tồn tại');
       if (foundPhoneNumber && foundPhoneNumber.length > 0) errors.push('Số điện thoại đã tồn tại');
-      if (foundAddress && foundAddress.length > 0) errors.push('Địa chỉ đã tồn tại');
 
       if (errors.length > 0) {
         return res.status(404).json({

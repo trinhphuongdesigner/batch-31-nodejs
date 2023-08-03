@@ -30,7 +30,7 @@ const employeeSchema = new Schema(
       type: String,
       required: [true, 'Địa chỉ không được bỏ trống'],
       maxLength: [500, 'Địa chỉ không được vượt quá 500 ký tự'],
-      unique: [true, 'Địa chỉ không được trùng'],
+      // unique: [true, 'Địa chỉ không được trùng'],
     },
     email: {
       type: String,

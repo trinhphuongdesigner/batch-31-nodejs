@@ -60,6 +60,11 @@ module.exports = {
         .max(500, 'Địa chỉ không được vượt quá 500 ký tự'),
 
       birthday: yup.date(),
+
+      password: yup.string()
+        .required()
+        .min(3, 'Không được ít hơn 3 ký tự')
+        .max(12, 'Không được vượt quá 12 ký tự'),
     }),
   }),
 };
