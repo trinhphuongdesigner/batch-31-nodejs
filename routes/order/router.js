@@ -5,7 +5,8 @@ const { validateSchema } = require('../../helper');
 const {
   getDetailSchema,
   createSchema,
-  updateSchema,
+  updateEmployeeSchema,
+  updateShippingDateSchema,
   updateStatusSchema,
 } = require('./validations');
 const {
@@ -13,7 +14,7 @@ const {
   getDetail,
   create,
   updateStatus,
-  update,
+  updateEmployee,
 } = require('./controller');
 
 router.route('/')
@@ -22,9 +23,14 @@ router.route('/')
 
 router.route('/:id')
   .get(validateSchema(getDetailSchema), getDetail)
-  .patch(validateSchema(updateSchema), update)
 
 router.route('/status/:id')
   .patch(validateSchema(updateStatusSchema), updateStatus)
+
+// router.route('/shipping/:id')
+//   .patch(validateSchema(updateShippingDateSchema), updateStatus)
+
+router.route('/employee/:id')
+  .patch(validateSchema(updateEmployeeSchema), updateEmployee)
 
 module.exports = router;

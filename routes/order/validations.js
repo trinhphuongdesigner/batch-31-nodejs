@@ -34,12 +34,16 @@ module.exports = {
 
   updateStatusSchema: yup.object({
     body: yup.object({
-      status: yup.string().test('validationStatus', 'Trạng thái không hợp lệ', (value) => {
-          if (['WAITING', 'COMPLETED', 'CANCELED', 'REJECTED', 'DELIVERING'].includes(value)) {
-            return true;
-          }
-          return false;
-      }),
+      // status: yup.string().test('validationStatus', 'Trạng thái không hợp lệ', (value) => {
+      //     if (['WAITING', 'COMPLETED', 'CANCELED', 'REJECTED', 'DELIVERING'].includes(value)) {
+      //       return true;
+      //     }
+      //     return false;
+      // }),
+      status: yup.string()
+        .required()
+        .oneOf(['WAITING', 'COMPLETED', 'CANCELED', 'REJECTED', 'DELIVERING'], 'Trạng thái không hợp lệ'),
+
     }),
   }),
 
@@ -101,7 +105,7 @@ module.exports = {
     }),
   }),
 
-  updateSchema: yup.object({
+  updateShippingDateSchema: yup.object({
     body: yup.object({
       shippedDate: yup
         .date()
@@ -118,11 +122,11 @@ module.exports = {
 
           return true;
         }),
+    }),
+  }),
 
-      status: yup.string()
-        .required()
-        .oneOf(['WAITING', 'COMPLETED', 'CANCELED'], 'Trạng thái không hợp lệ'),
-
+  updateEmployeeSchema: yup.object({
+    body: yup.object({
       employeeId: yup
         .string()
         .test('validationEmployeeID', 'ID sai định dạng', (value) => {
