@@ -86,7 +86,7 @@ module.exports = {
         await Product.findOneAndUpdate(
           { _id: item.productId },
           { $inc: { stock: -item.quantity } }
-          );
+        );
       });
 
       return res.send({
@@ -146,24 +146,24 @@ module.exports = {
           message: 'Đơn hàng không khả dụng',
         });
       }
-      
+
       if (checkOrder.employeeId !== employeeId) {
         const employee = await Employee.findOne({
           _id: employeeId,
           isDeleted: false,
         });
-  
+
         if (!employee) {
           return res.status(404).json({
             code: 404,
             message: 'Nhân viên không tồn tại',
           });
         }
-  
+
         const updateOrder = await Order.findByIdAndUpdate(id, { employeeId }, {
           new: true,
         });
-  
+
         if (updateOrder) {
           return res.send({
             code: 200,
@@ -171,7 +171,7 @@ module.exports = {
             payload: updateOrder,
           });
         }
-  
+
         return res.status(404).send({ code: 404, message: 'Không tìm thấy' });
       }
 
@@ -181,44 +181,24 @@ module.exports = {
     }
   },
 
-  // updateEmployee: async function (req, res, next) {
-  //   try {
-  //     const { id } = req.params;
+  updateShippingDate: async function (req, res, next) {
+    try {
+      const { id } = req.params;
+      const { shippedDate } = req.body;
 
-  //     const { employeeId, shippedDate } = req.body;
+      const updateOrder = await Order.findByIdAndUpdate(id, { shippedDate }, { new: true });
 
-  //     const employee = await Employee.findOne({
-  //       _id: employeeId,
-  //       isDeleted: false,
-  //     });
+      if (!updateOrder) {
+        return res.status(404).send({ code: 404, message: 'Không tìm thấy' });
+      }
 
-  //     const errors = [];
-  //     if (!employee || employee.isDelete)
-  //       errors.push('Nhân viên không tồn tại');
-
-  //     if (errors.length > 0) {
-  //       return res.status(404).json({
-  //         code: 404,
-  //         message: 'Lỗi',
-  //         errors,
-  //       });
-  //     }
-
-  //     const found = await Order.findByIdAndUpdate(id, updateData, {
-  //       new: true,
-  //     });
-
-  //     if (found) {
-  //       return res.send({
-  //         code: 200,
-  //         message: 'Cập nhật thành công',
-  //         payload: found,
-  //       });
-  //     }
-
-  //     return res.status(404).send({ code: 404, message: 'Không tìm thấy' });
-  //   } catch (error) {
-  //     return res.status(500).json({ code: 500, error: err });
-  //   }
-  // },
+      return res.send({
+        code: 200,
+        message: 'Cập nhật thành công',
+        payload: updateOrder,
+      });
+    } catch (error) {
+      return res.status(500).json({ code: 500, error });
+    }
+  }
 };

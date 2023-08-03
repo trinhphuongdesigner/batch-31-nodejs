@@ -14,6 +14,7 @@ const {
   getDetail,
   create,
   updateStatus,
+  updateShippingDate,
   updateEmployee,
 } = require('./controller');
 
@@ -27,8 +28,8 @@ router.route('/:id')
 router.route('/status/:id')
   .patch(validateSchema(updateStatusSchema), updateStatus)
 
-// router.route('/shipping/:id')
-//   .patch(validateSchema(updateShippingDateSchema), updateStatus)
+router.route('/shipping/:id')
+  .patch(validateSchema(updateShippingDateSchema), updateShippingDate)
 
 router.route('/employee/:id')
   .patch(validateSchema(updateEmployeeSchema), updateEmployee)
