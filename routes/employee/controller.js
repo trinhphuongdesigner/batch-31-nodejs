@@ -98,8 +98,15 @@ module.exports = {
       
       const { email, phoneNumber } = updateData;
 
-      const getEmailExits = Employee.find({ email });
-      const getPhoneExits = Employee.find({ phoneNumber });
+      const getEmailExits = Employee.find({ 
+        email,
+        _id: { $ne: id }
+      });
+      
+      const getPhoneExits = Employee.find({
+        phoneNumber,
+        _id: { $ne: id }
+      });
 
       const [foundEmail, foundPhoneNumber] = await Promise.all([getEmailExits, getPhoneExits]);
 
