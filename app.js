@@ -38,7 +38,7 @@ app.use(
   }),
 );
 
-mongoose.connect('mongodb://127.0.0.1:27017/node-31-database');
+mongoose.connect(`${process.env.DATABASE_URL}${process.env.DATABASE_NAME}`);
 
 app.use('/', indexRouter);
 
