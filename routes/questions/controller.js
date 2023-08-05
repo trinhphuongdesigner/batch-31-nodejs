@@ -165,9 +165,7 @@ module.exports = {
 
       const d = { $divide: [m, 100] }; // price * 90 / 100
 
-      const conditionFind = { $expr: { $lte: [d, parseFloat(40000)] } };
-
-      console.log('««««« conditionFind »»»»»', conditionFind);
+      const conditionFind = { $expr: { $lte: [d, 1000] } };
 
       let results = await Product.find(conditionFind)
         .select('-categoryId -supplierId -description')
@@ -179,7 +177,7 @@ module.exports = {
       //     ...item,
       //     dis,
       //   }
-      // }).filter((item) => item.dis >= 40000);
+      // }).filter((item) => item.dis <= 1000);
 
       // console.log('««««« newResults »»»»»', newResults);
 
@@ -238,9 +236,14 @@ module.exports = {
       // ]);
       // aggregate([])
 
-      let results = await Product.aggregate().match({
-        $expr: { $lte: [d, parseFloat(40000)] },
-      });
+      let results = await Product.aggregate([
+        {
+          $match: { $expr: { $lte: [d, 1000] }},
+        },
+      ]);
+
+      // let results = await Product.aggregate()
+      // .match({ $expr: { $lte: [d, 1000] }});
 
       let total = await Product.countDocuments();
 
@@ -264,7 +267,7 @@ module.exports = {
       // let results = await Product.aggregate([
       //   { $addFields: { disPrice: d } },
       //   {
-      //     $match: { $expr: { $lte: ['$disPrice', parseFloat(40000)] } },
+      //     $match: { $expr: { $lte: ['$disPrice', 1000] } },
       //   },
       //   {
       //     $project: {
@@ -277,11 +280,73 @@ module.exports = {
 
       let results = await Product.aggregate()
         .addFields({ disPrice: d })
-        .match({ $expr: { $lte: ['$disPrice', parseFloat(40000)] } })
+        .match({ $expr: { $lte: ['$disPrice', 1000] } })
         .project({
           categoryId: 0,
           supplierId: 0,
           description: 0,
+          isDeleted: 0,
+        });
+
+      let total = await Product.countDocuments();
+
+      return res.send({
+        code: 200,
+        total,
+        totalResult: results.length,
+        payload: results,
+      });
+    } catch (err) {
+      console.log('««««« err »»»»»', err);
+      return res.status(500).json({ code: 500, error: err });
+    }
+  },
+
+  question3d: async (req, res, next) => {
+    try {
+      const s = { $subtract: [100, '$discount'] }; // (100 - 10) s => 90
+      const m = { $multiply: ['$price', s] }; // price * 90
+      const d = { $divide: [m, 100] }; // price * 90 / 100
+
+      // let results = await Product.aggregate([
+      //   { $addFields: { disPrice: d } },
+      //   {
+      //     $match: { $expr: { $lte: ['$disPrice', 1000] } },
+      //   },
+      //   {
+      //     $project: {
+      //       categoryId: 0,
+      //       supplierId: 0,
+      //       description: 0,
+      //     },
+      //   },
+      // ]);
+
+      let results = await Product.aggregate()
+        .addFields({ disPrice: d })
+        .match({ $expr: { $lte: ['$disPrice', 1000] } })
+        .lookup({
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'categories',
+        })
+        // .unwind('categories')
+        .lookup({
+          from: 'suppliers',
+          localField: 'supplierId',
+          foreignField: '_id',
+          as: 'suppliers',
+        })
+        // .unwind('suppliers')
+        .project({
+          categoryId: 0,
+          supplierId: 0,
+          description: 0,
+          isDeleted: 0,
+          suppliers: {
+            isDeleted: 0,
+          },
         });
 
       let total = await Product.countDocuments();
