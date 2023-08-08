@@ -368,7 +368,7 @@ module.exports = {
       const { address } = req.query;
 
       const conditionFind = {
-        address: { $regex: new RegExp(`${address}`), $options: 'i' },
+        address: fuzzySearch(address),
       };
       // const conditionFind = { address: new RegExp(`${address}`) };
       // const conditionFind = { address: {$eq: address } };
@@ -1559,5 +1559,4 @@ module.exports = {
       return res.status(500).json({ code: 500, error: err });
     }
   },
-
 };
