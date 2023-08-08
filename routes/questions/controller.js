@@ -1305,6 +1305,7 @@ module.exports = {
                 $multiply: [
                   '$orderDetails.price',
                   { $subtract: [100, '$orderDetails.discount'] },
+                  // '$orderDetails.quantity',
                 ],
               },
               100,
@@ -1320,6 +1321,7 @@ module.exports = {
           // address: { $first: '$employees.address' },
           // birthday: { $first: '$employees.birthday' },
           totalSales: {
+            // $sum: '$orderDetails.originalPrice',
             $sum: { $multiply: ['$orderDetails.originalPrice', '$orderDetails.quantity'] },
           },
         })
@@ -1536,10 +1538,14 @@ module.exports = {
         .group({
           _id: null,
           avg: { $avg: '$total' },
+          total: { $sum: '$total' },
+          count: { $sum: 1 },
         })
         .project({
           _id: 0,
           avg: 1,
+          total: 1,
+          count: 1,
         })
 
       let total = await Order.countDocuments();
