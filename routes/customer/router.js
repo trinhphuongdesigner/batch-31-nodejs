@@ -16,7 +16,7 @@ const {
 } = require('./controller');
 
 router.route('/')
-  .get(passport.authenticate('jwt', { session: false }), getAll)
+  .get(getAll)
   .post(validateSchema(createSchema), create) // ADMIN TẠO TÀI KHOẢN CHO NGƯỜI DÙNG
 
 router.route('/register')

@@ -50,24 +50,24 @@ const passportVerifyAccount = new LocalStrategy({ usernameField: 'email' },
   },
 );
 
-// const passportConfigBasic = new BasicStrategy(async function (username, password, done) {
-//   try {
-//     const user = await Employee.findOne({ email: username });
+const passportConfigBasic = new BasicStrategy(async function (username, password, done) {
+  try {
+    const user = await Customer.findOne({ email: username, isDeleted: false });
   
-//     if (!user) return done(null, false);
+    if (!user) return done(null, false);
   
-//     const isCorrectPass = await user.isValidPass(password);
+    const isCorrectPass = await user.isValidPass(password);
   
-//     if (!isCorrectPass) return done(null, false);
+    if (!isCorrectPass) return done(null, false);
   
-//     return done(null, user);
-//   } catch (error) {
-//     done(error, false);
-//   }
-// });
+    return done(null, user);
+  } catch (error) {
+    done(error, false);
+  }
+});
 
 module.exports = {
   passportVerifyToken,
   passportVerifyAccount,
-  // passportConfigBasic,
+  passportConfigBasic,
 };

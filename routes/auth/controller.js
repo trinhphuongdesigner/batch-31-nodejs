@@ -1,4 +1,5 @@
 const { generateToken } = require('../../helper/jwtHelper');
+const { Customer } = require('../../models');
 
 module.exports = {
   login: async (req, res, next) => {
@@ -35,7 +36,22 @@ module.exports = {
     }
   },
 
-  
+  basicLogin: async (req, res, next) => {
+    try {
+      const user = await Customer.findById(req.user._id).select('-password').lean();
+      const token = generateToken(user);
+      // const refreshToken = generateRefreshToken(user._id);
+
+      res.json({
+        token,
+        // refreshToken,
+      });
+    } catch (err) {
+      console.log('««««« err »»»»»', err);
+      res.sendStatus(400);
+    }
+  },
+
   getMe: async (req, res, next) => {
     try {
       res.status(200).json({

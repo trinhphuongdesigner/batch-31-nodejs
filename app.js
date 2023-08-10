@@ -24,7 +24,7 @@ const questionsRouter = require('./routes/questions/router');
 const {
   passportVerifyToken,
   passportVerifyAccount,
-  // passportConfigBasic,
+  passportConfigBasic,
 } = require('./middlewares/passport');
 
 const app = express();
@@ -50,17 +50,18 @@ mongoose.connect(`${process.env.DATABASE_URL}${process.env.DATABASE_NAME}`);
 
 passport.use(passportVerifyToken);
 passport.use(passportVerifyAccount);
+passport.use(passportConfigBasic);
 
 app.use('/', indexRouter);
 
-app.use('/products', productRouter);
-app.use('/categories', categoryRouter);
-app.use('/suppliers', supplierRouter);
+app.use('/products', passport.authenticate('jwt', { session: false }), productRouter);
+app.use('/categories', passport.authenticate('jwt', { session: false }), categoryRouter);
+app.use('/suppliers', passport.authenticate('jwt', { session: false }), supplierRouter);
 app.use('/cart', cartRouter);
-app.use('/customers', customerRouter);
-app.use('/employees', employeeRouter);
+app.use('/customers', passport.authenticate('jwt', { session: false }), customerRouter);
+app.use('/employees', passport.authenticate('jwt', { session: false }), employeeRouter);
 app.use('/auth', authRouter);
-app.use('/orders', orderRouter);
+app.use('/orders', passport.authenticate('jwt', { session: false }), orderRouter);
 
 app.use('/questions', questionsRouter);
 
