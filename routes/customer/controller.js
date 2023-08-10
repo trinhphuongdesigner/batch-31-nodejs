@@ -40,7 +40,7 @@ module.exports = {
     try {
       const data = req.body;
 
-      const { email, phoneNumber, address } = data;
+      const { email, phoneNumber } = data;
 
       const getEmailExits = Customer.findOne({ email });
       const getPhoneExits = Customer.findOne({ phoneNumber });

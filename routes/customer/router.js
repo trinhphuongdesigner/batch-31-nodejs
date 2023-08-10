@@ -16,7 +16,10 @@ const {
 
 router.route('/')
   .get(getAll)
-  .post(validateSchema(createSchema), create)
+  .post(validateSchema(createSchema), create) // ADMIN TẠO TÀI KHOẢN CHO NGƯỜI DÙNG
+
+router.route('/register')
+  .post(validateSchema(createSchema), create) // ADMIN TẠO TÀI KHOẢN CHO NGƯỜI DÙNG
 
 router.route('/:id')
   .get(validateSchema(getDetailSchema), getDetail)
