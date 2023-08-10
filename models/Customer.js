@@ -85,9 +85,9 @@ customerSchema.pre('save', async function (next) {
   }
 });
 
-customerSchema.methods.isValidPass = async function(pass) {
+customerSchema.methods.isValidPass = async function(password) {
   try {
-    return await bcrypt.compare(pass, this.password);
+    return await bcrypt.compare(password, this.password);
   } catch (err) {
     throw new Error(err);
   }
