@@ -6,6 +6,7 @@ const logger = require('morgan');
 const cors = require('cors');
 const { default: mongoose } = require('mongoose');
 require('dotenv').config();
+const passport = require('passport');
 
 const indexRouter = require('./routes/index');
 
@@ -19,6 +20,12 @@ const authRouter = require('./routes/auth/router');
 const orderRouter = require('./routes/order/router');
 const cartRouter = require('./routes/cart/router');
 const questionsRouter = require('./routes/questions/router');
+
+const {
+  // passportConfig,
+  passportConfigLocal,
+  // passportConfigBasic,
+} = require('./middlewares/passport');
 
 const app = express();
 
@@ -40,6 +47,8 @@ app.use(
 );
 
 mongoose.connect(`${process.env.DATABASE_URL}${process.env.DATABASE_NAME}`);
+
+passport.use(passportConfigLocal);
 
 app.use('/', indexRouter);
 

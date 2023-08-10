@@ -1,29 +1,34 @@
-
-const { Customer } = require('../../models');
+const { generateToken } = require('../../helper/jwtHelper');
 
 module.exports = {
   login: async (req, res, next) => {
     try {
-      const { email, password } = req.body;
-      // phuongtd1@gmail.com
-      // 123456
-
-      const userInfo = await Customer.findOne({
-        isDeleted: false,
+      const {
+        _id,
+        firstName,
+        lastName,
+        phoneNumber,
+        address,
         email,
+        birthday,
+        updatedAt,
+      } = req.user
+      const token = generateToken({
+          _id,
+          firstName,
+          lastName,
+          phoneNumber,
+          address,
+          email,
+          birthday,
+          updatedAt,
+        });
+      // const refreshToken = generateRefreshToken(employee._id);
+
+      return res.status(200).json({
+        token,
+        // refreshToken,
       });
-
-      if (!userInfo) {
-        return res.send({ code: 404, message: "Tài khoản không tồn tại hoặc bị xóa" });
-      }
-
-      const isCorrectPass = await userInfo.isValidPass(password);
-
-      if (isCorrectPass) {
-        return res.send({ code: 200, payload: userInfo, message: "Đăng nhập thành công" });
-      }
-
-      return res.send({ code: 400, message: "Tài khoản hoặc mật khẩu không đúng" });
     } catch (err) {
       console.log('««««« err »»»»»', err);
       return res.status(500).json({ code: 500, error: err });
