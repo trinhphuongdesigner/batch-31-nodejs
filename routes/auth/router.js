@@ -8,6 +8,7 @@ const {
 } = require('./validations');
 const {
   login,
+  getMe,
 } = require('./controller');
 
 router.route('/login')
@@ -15,6 +16,12 @@ router.route('/login')
     validateSchema(loginSchema),
     passport.authenticate('local', { session: false }),
     login,
+  )
+
+router.route('/profile')
+  .get(
+    passport.authenticate('jwt', { session: false }),
+    getMe,
   )
 
 module.exports = router;

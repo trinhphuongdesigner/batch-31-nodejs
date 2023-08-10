@@ -22,8 +22,8 @@ const cartRouter = require('./routes/cart/router');
 const questionsRouter = require('./routes/questions/router');
 
 const {
-  // passportConfig,
-  passportConfigLocal,
+  passportVerifyToken,
+  passportVerifyAccount,
   // passportConfigBasic,
 } = require('./middlewares/passport');
 
@@ -48,7 +48,8 @@ app.use(
 
 mongoose.connect(`${process.env.DATABASE_URL}${process.env.DATABASE_NAME}`);
 
-passport.use(passportConfigLocal);
+passport.use(passportVerifyToken);
+passport.use(passportVerifyAccount);
 
 app.use('/', indexRouter);
 

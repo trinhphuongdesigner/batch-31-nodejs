@@ -34,4 +34,16 @@ module.exports = {
       return res.status(500).json({ code: 500, error: err });
     }
   },
+
+  
+  getMe: async (req, res, next) => {
+    try {
+      res.status(200).json({
+        message: "Layas thoong tin thanfh coong",
+        payload: req.user,
+      });
+    } catch (err) {
+      res.sendStatus(500);
+    }
+  },
 };

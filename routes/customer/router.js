@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 
 const { validateSchema } = require('../../helper');
 const {
@@ -15,7 +16,7 @@ const {
 } = require('./controller');
 
 router.route('/')
-  .get(getAll)
+  .get(passport.authenticate('jwt', { session: false }), getAll)
   .post(validateSchema(createSchema), create) // ADMIN TẠO TÀI KHOẢN CHO NGƯỜI DÙNG
 
 router.route('/register')
