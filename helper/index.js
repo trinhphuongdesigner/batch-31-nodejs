@@ -53,8 +53,6 @@ const validateSchema = (schema) => async (req, res, next) => { // thá»±c thi viá
   }
 };
 
-
-
 module.exports = {
   writeFileSync,
   combineObjects,

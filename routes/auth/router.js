@@ -8,6 +8,7 @@ const {
 } = require('./validations');
 const {
   login,
+  checkRefreshToken,
   getMe,
   basicLogin,
 } = require('./controller');
@@ -18,6 +19,9 @@ router.route('/login')
     passport.authenticate('local', { session: false }),
     login,
   );
+
+router.route('/refresh-token')
+  .post(checkRefreshToken)
 
 router.route('/basic')
   .post(
