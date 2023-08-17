@@ -20,6 +20,32 @@ module.exports = {
     }
   },
 
+  getList: async (req, res, next) => { // NOTE
+    try {
+      const { page, pageSize } = req.query;
+      const limit = pageSize || 12;
+      const skip = limit * (page - 1) || 0;
+
+      const conditionFind = { isDeleted: false };
+
+      let results = await Product.find(conditionFind)
+        .populate('category')
+        .populate('supplier')
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+      const total = await Product.countDocuments(conditionFind)
+
+      return res.send({ code: 200, payload: results, total });
+    } catch (err) {
+      return res.send(404, {
+        message: "Không tìm thấy",
+        err,
+      });
+    }
+  },
+
   search: async (req, res, next) => {
     try {
       const { name, categoryId, priceStart, priceEnd, supplierId } = req.query;
