@@ -97,14 +97,13 @@ router.post('/media/update/:id', async (req, res) => {
       } else if (err) {
         res.status(500).json({ type: 'UnknownError', err: err });
       } else {
-        const imageUrl = `/uploads/media/${req.file.filename}`;
-        const name = req.file.filename;
-
         const response = await updateDocument(
           { _id: id },
           {
-            location: imageUrl,
-            name,
+            location: req.file.path,
+            name: req.file.filename,
+            employeeId: req.user._id,
+            size: req.file.size,
           },
           'Media',
         );

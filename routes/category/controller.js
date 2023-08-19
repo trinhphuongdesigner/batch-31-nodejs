@@ -1,5 +1,6 @@
 const { Category } = require('../../models');
-const { fuzzySearch } = require('../../helper');
+const { fuzzySearch,  } = require('../../helper');
+const { insertDocument } = require('../../helper/MongoDbHelper');
 
 module.exports = {
   getAll: async (req, res, next) => {
@@ -50,17 +51,22 @@ module.exports = {
   create: async (req, res, next) => {
     try {
       const { name, description } = req.body;
-      const newRecord = new Category({
-        name, description,
-      });
+      const response = await insertDocument(
+        { name, description },
+        'categories',
+      );
+      // const newRecord = new Category({
+      //   name, description,
+      // });
 
-      let result = await newRecord.save();
+      // let result = await newRecord.save();
 
       return res.send(200, {
         message: "Thành công",
-        payload: result,
+        payload: response.result,
       });
     } catch (err) {
+      console.log('««««« err »»»»»', err);
       return res.send(400, {
         message: "Thất bại",
         errors: err,
