@@ -17,6 +17,7 @@ const customerRouter = require('./routes/customer/router');
 const employeeRouter = require('./routes/employee/router');
 const authRouter = require('./routes/auth/router');
 
+const mediaRouter = require('./routes/upload');
 const orderRouter = require('./routes/order/router');
 const cartRouter = require('./routes/cart/router');
 const questionsRouter = require('./routes/questions/router');
@@ -62,6 +63,7 @@ app.use('/customers', passport.authenticate('jwt', { session: false }), customer
 app.use('/employees', passport.authenticate('jwt', { session: false }), employeeRouter);
 app.use('/auth', authRouter);
 app.use('/orders', passport.authenticate('jwt', { session: false }), orderRouter);
+app.use('/media', passport.authenticate('jwt', { session: false }), mediaRouter);
 
 app.use('/questions', questionsRouter);
 
