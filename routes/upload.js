@@ -19,25 +19,25 @@ router.post('/upload-single', (req, res, next) =>
       } else if (err) {
         res.status(500).json({ type: 'UnknownError', err: err });
       } else {
-        const response = await insertDocument(
-          {
-            location: req.file.path,
-            name: req.file.filename,
-            employeeId: req.user._id,
-            size: req.file.size,
-          },
-          'Media',
-        );
-        // const media = new Media({
-        //   location: req.file.path,
-        //   name: req.file.filename,
-        //   employeeId: req.user._id,
-        //   size: req.file.size,
-        // });
+        // const response = await insertDocument(
+        //   {
+        //     location: req.file.path,
+        //     name: req.file.filename,
+        //     employeeId: req.user._id,
+        //     size: req.file.size,
+        //   },
+        //   'Media',
+        // );
+        const media = new Media({
+          location: req.file.path,
+          name: req.file.filename,
+          employeeId: req.user._id,
+          size: req.file.size,
+        });
 
-        // const response = await media.save();
+        const response = await media.save();
 
-        res.status(200).json({ ok: true, payload: response });
+        res.status(200).json({ message: "Tải lên thành công", payload: response });
       }
     } catch (error) {
       console.log('««««« error »»»»»', error);
@@ -54,34 +54,34 @@ router.post('/upload-multiple', (req, res) =>
       } else if (err) {
         res.status(500).json({ type: 'UnknownError', err: err });
       } else {
-        const files = req.files;
-
-        const dataInsert = files.reduce((prev, nextP) => {
-          prev.push({ name: nextP.filename, location: nextP.path });
+        const dataInsert = req.files.reduce((prev, file) => {
+          prev.push({
+            name: file.filename,
+            location: file.path,
+            size: file.size,
+            employeeId: req.user._id,
+          });
           return prev;
         }, []);
 
         const response = await insertDocuments(dataInsert, 'Media');
 
-        res.status(200).json({ ok: true, payload: response });
+        res.status(200).json({ message: "Tải lên thành công", payload: response });
       }
     } catch (error) {
-      res.status(500).json({ ok: false, error });
+      console.log('««««« error »»»»»', error);
+      res.status(500).json({ message: "Upload files error", error });
     }
   }),
 );
 
 router.get('/:id', async (req, res, next) => {
   const { id } = req.params;
+  const payload = await Media.findById(id);
 
-  const found = await findDocument(id, 'Media');
-  if (!found) {
-    return res
-      .status(410)
-      .json({ message: `${collectionName} with id ${id} not found` });
-  }
+  if(payload) return res.status(200).json({ payload });
 
-  res.status(200).json({ ok: true, payload: found });
+  return res.status(400).json({ message: "Không tìm thấy" });
 });
 
 router.post('/media/update/:id', async (req, res) => {
