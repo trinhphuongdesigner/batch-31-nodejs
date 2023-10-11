@@ -1,7 +1,7 @@
 const JWT = require('jsonwebtoken');
 
 const { generateToken, generateRefreshToken } = require('../../helper/jwtHelper');
-const { Customer } = require('../../models');
+const { Customer, Cart } = require('../../models');
 const jwtSettings = require('../../constants/jwtSetting');
 
 module.exports = {
@@ -33,6 +33,48 @@ module.exports = {
         token,
         refreshToken,
       });
+    } catch (err) {
+      console.log('««««« err »»»»»', err);
+      return res.status(500).json({ code: 500, error: err });
+    }
+  },
+
+  
+  register: async function (req, res, next) {
+    try {
+      const data = req.body;
+
+      const { email, phoneNumber } = data;
+
+      const getEmailExits = Customer.findOne({ email });
+      const getPhoneExits = Customer.findOne({ phoneNumber });
+
+      const [foundEmail, foundPhoneNumber] = await Promise.all([getEmailExits, getPhoneExits]);
+
+      const errors = [];
+      if (foundEmail) errors.push('Email đã tồn tại');
+      // if (!isEmpty(foundEmail)) errors.push('Email đã tồn tại');
+      if (foundPhoneNumber) errors.push('Số điện thoại đã tồn tại');
+
+      if (errors.length > 0) {
+        return res.status(404).json({
+          code: 404,
+          message: "Không thành công",
+          errors,
+        });
+      }
+
+      const newItem = new Customer(data);
+  
+      let result = await newItem.save();
+      customerId = result._id;
+
+      const newCart = new Cart({ customerId });
+      newCart.save();
+
+      // Đã tạo tài khoản thành công
+  
+      return res.send({ code: 200, message: 'Tạo thành công', payload: result });
     } catch (err) {
       console.log('««««« err »»»»»', err);
       return res.status(500).json({ code: 500, error: err });

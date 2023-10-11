@@ -58,7 +58,7 @@ app.use('/', indexRouter);
 app.use('/products', passport.authenticate('jwt', { session: false }), productRouter);
 app.use('/categories', passport.authenticate('jwt', { session: false }), categoryRouter);
 app.use('/suppliers', passport.authenticate('jwt', { session: false }), supplierRouter);
-app.use('/cart', cartRouter);
+app.use('/cart', cartRouter); // thêm xác thực người dùng
 app.use('/customers', passport.authenticate('jwt', { session: false }), customerRouter);
 app.use('/employees', passport.authenticate('jwt', { session: false }), employeeRouter);
 app.use('/auth', authRouter);

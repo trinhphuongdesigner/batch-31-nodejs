@@ -4,10 +4,11 @@ const router = express.Router();
 
 const { validateSchema } = require('../../helper');
 const {
-  loginSchema,
+  loginSchema, registerSchema,
 } = require('./validations');
 const {
   login,
+  register,
   checkRefreshToken,
   getMe,
   basicLogin,
@@ -18,6 +19,12 @@ router.route('/login')
     validateSchema(loginSchema),
     passport.authenticate('local', { session: false }),
     login,
+  );
+
+router.route('/register')
+  .post(
+    validateSchema(registerSchema),
+    register,
   );
 
 router.route('/refresh-token')
